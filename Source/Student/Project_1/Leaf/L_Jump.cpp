@@ -4,14 +4,33 @@
 
 void L_Jump::on_enter()
 {
+	rise = true;
+	fall = false;
 	startPos = agent->get_position();
-	endPos = Vec3(startPos.x, startPos.y + 1.0f, startPos.z);
+	endPos = Vec3(agent->get_position().x, agent->get_position().y + 5.0f, agent->get_position().z);
 	BehaviorNode::on_leaf_enter();
 }
 
 void L_Jump::on_update(float dt)
 {
+	while (rise == true)
+	{
+		const auto result = agent->move_toward_point(endPos, dt);
 
-	on_success();
+		if (result == true)
+		{
+			rise = false;
+			fall = true;
+		}
+	}
+	while (fall == true)
+	{
+		const auto result = agent->move_toward_point(startPos, dt);
+
+		if (result == true)
+		{
+			on_success();
+		}
+	}
 	display_leaf_text();
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "BehaviorNode.h"
+#include "Misc/NiceTypes.h"
 
 class L_MoveToTree : public BaseNode<L_MoveToTree>
 {

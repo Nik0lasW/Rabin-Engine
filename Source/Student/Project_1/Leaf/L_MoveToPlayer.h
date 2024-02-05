@@ -1,15 +1,14 @@
 #pragma once
 #include "BehaviorNode.h"
+#include "Misc/NiceTypes.h"
 
-class L_Jump : public BaseNode<L_Jump>
+class L_MoveToPlayer : public BaseNode<L_MoveToPlayer>
 {
 protected:
     virtual void on_enter() override;
     virtual void on_update(float dt) override;
 
 private:
-    Vec3 startPos;
-    Vec3 endPos;
-    bool rise;
-    bool fall;
+    Vec3 targetPoint;
+
 };

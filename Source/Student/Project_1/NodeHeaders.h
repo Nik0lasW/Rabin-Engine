@@ -32,3 +32,6 @@
 #include "Leaf/L_MoveToTree.h"
 #include "Leaf/L_Jump.h"
 #include "Leaf/L_Spin.h"
+#include "Leaf/L_CheckNearTree.h"
+#include "Leaf/L_CheckNearPlayer.h"
+#include "Leaf/L_MoveToPlayer.h"

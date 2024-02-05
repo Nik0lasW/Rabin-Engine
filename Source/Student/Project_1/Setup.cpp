@@ -33,11 +33,14 @@ void ProjectOne::setup()
     tree->set_color(Vec3(0, 0.5, 0));   // Set the tree to green
     tree->set_position(Vec3(50, 0, 50));
 
-    auto present1 = agents->create_behavior_agent("Present", BehaviorTreeTypes::Idle, Agent::AgentModel::Ball);
+    auto present1 = agents->create_behavior_agent("Present", BehaviorTreeTypes::Present, Agent::AgentModel::Ball);
     present1->set_position(Vec3(80, 0, 20));
-
-    auto present2 = agents->create_behavior_agent("Present", BehaviorTreeTypes::Idle, Agent::AgentModel::Ball);
+    present1->set_scaling(Vec3(0.6f, 0.6f, 0.6f));
+    present1->set_color(Vec3(0.5, 0, 0));
+    auto present2 = agents->create_behavior_agent("Present", BehaviorTreeTypes::Present, Agent::AgentModel::Ball);
     present2->set_position(Vec3(20, 0, 80));
+    present2->set_scaling(Vec3(0.6f, 0.6f, 0.6f));
+    present2->set_color(Vec3(0.5, 0, 0));
     // You can technically load any map you want, even create your own map file,
     // but behavior agents won't actually avoid walls or anything special, unless you code
     // that yourself (that's the realm of project 2)

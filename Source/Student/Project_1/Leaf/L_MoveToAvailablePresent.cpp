@@ -4,7 +4,7 @@
 
 void L_MoveToAvailablePresent::on_enter()
 {
-    float maxClosest = 30.0f;
+    float closestDistance = 30.0f;
     Vec3 ClosestPoint;
     bool targetFound = false;
 
@@ -18,10 +18,10 @@ void L_MoveToAvailablePresent::on_enter()
         {
             const auto& agentPos = a->get_position();
             const float distance = Vec3::Distance(currPos, agentPos);
-
-            if (distance <= maxClosest)
+    
+            if (distance <= closestDistance)
             {
-                maxClosest = distance;
+                closestDistance = distance;
                 ClosestPoint = agentPos;
                 targetFound = true;
             }
@@ -33,7 +33,7 @@ void L_MoveToAvailablePresent::on_enter()
         {
             const auto& agentPos = a->get_position();
             const float distance = Vec3::Distance(ClosestPoint, agentPos);
-            if (distance < maxClosest)
+            if (distance < closestDistance)
             {
                 targetFound = false;
             }

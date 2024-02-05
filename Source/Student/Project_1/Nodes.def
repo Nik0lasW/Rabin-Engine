@@ -18,3 +18,6 @@ REGISTER_LEAF(L_MoveToAvailablePresent, "Checks For Present, If closest, Then Mo
 REGISTER_LEAF(L_MoveToTree, "Action: Move To Tree Agent")
 REGISTER_LEAF(L_Jump, "Action: Agent Rises And Falls")
 REGISTER_LEAF(L_Spin, "Action: Agent Rotates 360 Degree Around Y Axis")
+REGISTER_LEAF(L_CheckNearTree, "Condition: Check If Agent Is Near Tree")
+REGISTER_LEAF(L_CheckNearPlayer, "Condition: Check If Agent Is Near Player")
+REGISTER_LEAF(L_MoveToPlayer, "Action: Moves Agent To Player Agent")
