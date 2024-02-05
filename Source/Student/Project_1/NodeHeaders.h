@@ -17,7 +17,7 @@
 #include "Decorator/D_RepeatFourTimes.h"
 
 // Student Decorator Nodes
-
+#include "Decorator/D_RepeatTwoTimes.h"
 
 // Example Leaf Nodes
 #include "Leaf/L_CheckMouseClick.h"
@@ -28,3 +28,7 @@
 #include "Leaf/L_PlaySound.h"
 
 // Student Leaf Nodes
+#include "Leaf/L_MoveToAvailablePresent.h"
+#include "Leaf/L_MoveToTree.h"
+#include "Leaf/L_Jump.h"
+#include "Leaf/L_Spin.h"
