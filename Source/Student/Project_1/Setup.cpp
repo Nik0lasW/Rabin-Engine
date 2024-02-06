@@ -6,7 +6,7 @@ void ProjectOne::setup()
 {
     // Create an agent (using the default "Agent::AgentModel::Man" model)
     auto man = agents->create_behavior_agent("Player", BehaviorTreeTypes::Player);
-    auto bad = agents->create_behavior_agent("Grinch", BehaviorTreeTypes::Example);
+    auto bad = agents->create_behavior_agent("Grinch", BehaviorTreeTypes::Enemy);
     bad->set_color(Vec3(0, 0.5, 0));
     bad->set_position(Vec3(100, 0, 100));
     auto cop = agents->create_behavior_agent("Cop", BehaviorTreeTypes::Cop);
@@ -46,6 +46,14 @@ void ProjectOne::setup()
     present2->set_position(Vec3(20, 0, 80));
     present2->set_scaling(Vec3(0.6f, 0.6f, 0.6f));
     present2->set_color(Vec3(0.5, 0, 0));
+    auto present3 = agents->create_behavior_agent("Present", BehaviorTreeTypes::Present, Agent::AgentModel::Ball);
+    present3->set_position(Vec3(60, 0, 15));
+    present3->set_scaling(Vec3(0.6f, 0.6f, 0.6f));
+    present3->set_color(Vec3(0.5, 0, 0));
+    auto present4 = agents->create_behavior_agent("Present", BehaviorTreeTypes::Present, Agent::AgentModel::Ball);
+    present4->set_position(Vec3(10, 0, 45));
+    present4->set_scaling(Vec3(0.6f, 0.6f, 0.6f));
+    present4->set_color(Vec3(0.5, 0, 0));
     // You can technically load any map you want, even create your own map file,
     // but behavior agents won't actually avoid walls or anything special, unless you code
     // that yourself (that's the realm of project 2)

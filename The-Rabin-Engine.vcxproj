@@ -262,7 +262,6 @@
     <ClInclude Include="Source\Student\Project_1\Leaf\L_CheckNearPlayer.h" />
     <ClInclude Include="Source\Student\Project_1\Leaf\L_CheckNearTree.h" />
     <ClInclude Include="Source\Student\Project_1\Leaf\L_CheckMouseClick.h" />
-    <ClInclude Include="Source\Student\Project_1\Leaf\L_Jump.h" />
     <ClInclude Include="Source\Student\Project_1\Leaf\L_MoveToAvailablePresent.h" />
     <ClInclude Include="Source\Student\Project_1\Leaf\L_Idle.h" />
     <ClInclude Include="Source\Student\Project_1\Leaf\L_MoveToCorners.h" />
@@ -273,7 +272,6 @@
     <ClInclude Include="Source\Student\Project_1\Leaf\L_MoveToRandomPosition.h" />
     <ClInclude Include="Source\Student\Project_1\Leaf\L_MoveToTree.h" />
     <ClInclude Include="Source\Student\Project_1\Leaf\L_PlaySound.h" />
-    <ClInclude Include="Source\Student\Project_1\Leaf\L_Spin.h" />
     <ClInclude Include="Source\Student\Project_1\Leaf\L_Stun.h" />
     <ClInclude Include="Source\Student\Project_1\NodeHeaders.h" />
     <ClInclude Include="Source\Student\Project_2\P2_Pathfinding.h" />
@@ -356,7 +354,6 @@
     <ClCompile Include="Source\Student\Project_1\Leaf\L_CheckNearPlayer.cpp" />
     <ClCompile Include="Source\Student\Project_1\Leaf\L_CheckNearTree.cpp" />
     <ClCompile Include="Source\Student\Project_1\Leaf\L_CheckMouseClick.cpp" />
-    <ClCompile Include="Source\Student\Project_1\Leaf\L_Jump.cpp" />
     <ClCompile Include="Source\Student\Project_1\Leaf\L_MoveToAvailablePresent.cpp" />
     <ClCompile Include="Source\Student\Project_1\Leaf\L_Idle.cpp" />
     <ClCompile Include="Source\Student\Project_1\Leaf\L_MoveToCorners.cpp" />
@@ -367,7 +364,6 @@
     <ClCompile Include="Source\Student\Project_1\Leaf\L_MoveToRandomPosition.cpp" />
     <ClCompile Include="Source\Student\Project_1\Leaf\L_MoveToTree.cpp" />
     <ClCompile Include="Source\Student\Project_1\Leaf\L_PlaySound.cpp" />
-    <ClCompile Include="Source\Student\Project_1\Leaf\L_Spin.cpp" />
     <ClCompile Include="Source\Student\Project_1\Leaf\L_Stun.cpp" />
     <ClCompile Include="Source\Student\Project_1\Setup.cpp" />
     <ClCompile Include="Source\Student\Project_2\P2_Pathfinding.cpp" />

@@ -8,6 +8,5 @@ protected:
     virtual void on_enter() override;
     virtual void on_update(float dt) override;
 private:
-    int random;
     Vec3 targetPoint;
 };

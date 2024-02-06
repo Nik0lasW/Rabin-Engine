@@ -16,10 +16,19 @@ void L_CheckNearGrinch::on_update(float dt)
         {
             const auto& agentPos = a->get_position();
             const float distance = Vec3::Distance(currPos, agentPos);
-
-            if (distance <= 10.0f)
+            if (agent->get_type() == "Present")
             {
-                targetFound = true;
+                if (distance <= 8.0f)
+                {
+                    targetFound = true;
+                }
+            }
+            else
+            {
+                if (distance <= 10.0f)
+                {
+                    targetFound = true;
+                }
             }
         }
     }

@@ -4,20 +4,19 @@
 
 void L_MoveToCorners::on_enter()
 {
-	random = rand() % 4 + 1;
-	switch (random)
+	Vec3 currentPos = agent->get_position();
+	
+	float distance1 = Vec3::Distance(currentPos, Vec3(0, 0, 0));
+	float distance2 = Vec3::Distance(currentPos, Vec3(100, 0, 100));
+	if (distance2 < distance1)
 	{
-	case 1:
-		targetPoint = Vec3(0, 0, 0);
-		break;
-	case 2:
-		targetPoint = Vec3(0, 0, 100);
-		break;
-	case 3:
-		targetPoint = Vec3(100, 0, 0);
-	case 4:
 		targetPoint = Vec3(100, 0, 100);
 	}
+	else
+	{
+		targetPoint = Vec3(0, 0, 0);
+	}
+
 	BehaviorNode::on_leaf_enter();
 }
 

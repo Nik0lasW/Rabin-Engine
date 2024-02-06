@@ -10,5 +10,5 @@ protected:
 
 private:
     Vec3 targetPoint;
-
+    float velocity;
 };

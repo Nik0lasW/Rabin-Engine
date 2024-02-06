@@ -5,7 +5,7 @@
 void L_MoveToGrinch::on_enter()
 {
 	bool targetFound = false;
-	Vec3 treePos;
+	Vec3 grinchPos;
 	const auto& allAgents = agents->get_all_agents();
 
 	for (const auto& a : allAgents)
@@ -13,13 +13,13 @@ void L_MoveToGrinch::on_enter()
 		if (a->get_type() == "Grinch")
 		{
 			const auto& agentPos = a->get_position();
-			treePos = agentPos;
+			grinchPos = agentPos;
 			targetFound = true;
 		}
 	}
 	if (targetFound == true)
 	{
-		targetPoint = treePos;
+		targetPoint = grinchPos;
 		BehaviorNode::on_leaf_enter();
 	}
 	else // couldn't find a viable agent
@@ -34,24 +34,32 @@ void L_MoveToGrinch::on_update(float dt)
 
 	if (result == true)
 	{
-		const auto& allAgents = agents->get_all_agents();
-		float distance = 0.0f;
-		for (const auto& a : allAgents)
+		if (agent->get_type() == "Cop")
 		{
-			if (a->get_type() == "Grinch")
+			const auto& allAgents = agents->get_all_agents();
+			float distance = 0.0f;
+			for (const auto& a : allAgents)
 			{
-				const auto& agentPos = a->get_position();
-				distance = Vec3::Distance(targetPoint, agentPos);
+				if (a->get_type() == "Grinch")
+				{
+					const auto& agentPos = a->get_position();
+					distance = Vec3::Distance(targetPoint, agentPos);
+				}
 			}
-		}
-		if (distance <= 6.0f)
-		{
-			on_success();
+			if (distance <= 6.0f)
+			{
+				on_success();
+			}
+			else
+			{
+				on_failure();
+			}
 		}
 		else
 		{
-			on_failure();
+			on_success();
 		}
+		
 		
 	}
 

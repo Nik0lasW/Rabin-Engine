@@ -17,7 +17,7 @@ void L_CheckNearPlayer::on_update(float dt)
             const auto& agentPos = a->get_position();
             const float distance = Vec3::Distance(currPos, agentPos);
 
-            if (distance <= 6.0f)
+            if (distance <= 8.0f)
             {
                 targetFound = true;
             }

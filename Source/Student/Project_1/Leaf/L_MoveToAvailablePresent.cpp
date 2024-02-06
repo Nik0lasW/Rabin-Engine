@@ -29,7 +29,7 @@ void L_MoveToAvailablePresent::on_enter()
     }
     for (const auto& a : allAgents)
     {
-        if (a->get_type() == "Enemy" || a->get_type() == "Tree" || a->get_type() == "Player")
+        if (a->get_type() == "Grinch" || a->get_type() == "Tree" || a->get_type() == "Player")
         {
             const auto& agentPos = a->get_position();
             const float distance = Vec3::Distance(ClosestPoint, agentPos);

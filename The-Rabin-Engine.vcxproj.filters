@@ -331,12 +331,6 @@
     <ClInclude Include="Source\Student\Project_1\Decorator\D_RepeatTwoTimes.h">
       <Filter>Source\Student\Project_1\Decorator</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Student\Project_1\Leaf\L_Jump.h">
-      <Filter>Source\Student\Project_1\Leaf</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Student\Project_1\Leaf\L_Spin.h">
-      <Filter>Source\Student\Project_1\Leaf</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Student\Project_1\Leaf\L_CheckNearTree.h">
       <Filter>Source\Student\Project_1\Leaf</Filter>
     </ClInclude>
@@ -596,12 +590,6 @@
     </ClCompile>
     <ClCompile Include="Source\Student\Project_1\Decorator\D_RepeatTwoTimes.cpp">
       <Filter>Source\Student\Project_1\Decorator</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Student\Project_1\Leaf\L_Jump.cpp">
-      <Filter>Source\Student\Project_1\Leaf</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Student\Project_1\Leaf\L_Spin.cpp">
-      <Filter>Source\Student\Project_1\Leaf</Filter>
     </ClCompile>
     <ClCompile Include="Source\Student\Project_1\Leaf\L_CheckNearTree.cpp">
       <Filter>Source\Student\Project_1\Leaf</Filter>
