@@ -1,8 +1,8 @@
 #include <pch.h>
-#include "L_CheckNearTree.h"
+#include "L_CheckNearGrinch.h"
 #include "Agent/BehaviorAgent.h"
 
-void L_CheckNearTree::on_update(float dt)
+void L_CheckNearGrinch::on_update(float dt)
 {
     bool targetFound = false;
 
@@ -12,12 +12,12 @@ void L_CheckNearTree::on_update(float dt)
 
     for (const auto& a : allAgents)
     {
-        if (a->get_type() == "Tree")
+        if (a->get_type() == "Grinch")
         {
             const auto& agentPos = a->get_position();
             const float distance = Vec3::Distance(currPos, agentPos);
 
-            if (distance <= 6.5f)
+            if (distance <= 10.0f)
             {
                 targetFound = true;
             }

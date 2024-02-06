@@ -1,8 +1,8 @@
 #include <pch.h>
-#include "L_CheckNearTree.h"
+#include "L_CheckNearCop.h"
 #include "Agent/BehaviorAgent.h"
 
-void L_CheckNearTree::on_update(float dt)
+void L_CheckNearCop::on_update(float dt)
 {
     bool targetFound = false;
 
@@ -12,7 +12,7 @@ void L_CheckNearTree::on_update(float dt)
 
     for (const auto& a : allAgents)
     {
-        if (a->get_type() == "Tree")
+        if (a->get_type() == "Cop")
         {
             const auto& agentPos = a->get_position();
             const float distance = Vec3::Distance(currPos, agentPos);

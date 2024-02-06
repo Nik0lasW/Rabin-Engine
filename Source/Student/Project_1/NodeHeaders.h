@@ -18,6 +18,7 @@
 
 // Student Decorator Nodes
 #include "Decorator/D_RepeatTwoTimes.h"
+#include "Decorator/D_RepeatUntilSuccess.h"
 
 // Example Leaf Nodes
 #include "Leaf/L_CheckMouseClick.h"
@@ -35,3 +36,8 @@
 #include "Leaf/L_CheckNearTree.h"
 #include "Leaf/L_CheckNearPlayer.h"
 #include "Leaf/L_MoveToPlayer.h"
+#include "Leaf/L_CheckNearGrinch.h"
+#include "Leaf/L_MoveToGrinch.h"
+#include "Leaf/L_MoveToCorners.h"
+#include "Leaf/L_CheckNearCop.h"
+#include "Leaf/L_Stun.h"

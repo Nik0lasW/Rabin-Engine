@@ -6,7 +6,12 @@ void ProjectOne::setup()
 {
     // Create an agent (using the default "Agent::AgentModel::Man" model)
     auto man = agents->create_behavior_agent("Player", BehaviorTreeTypes::Player);
-
+    auto bad = agents->create_behavior_agent("Grinch", BehaviorTreeTypes::Example);
+    bad->set_color(Vec3(0, 0.5, 0));
+    bad->set_position(Vec3(100, 0, 100));
+    auto cop = agents->create_behavior_agent("Cop", BehaviorTreeTypes::Cop);
+    cop->set_color(Vec3(0, 0, 0.5));
+    cop->set_position(Vec3(50, 0, 0));
     // You can change properties here or at runtime from a behavior tree leaf node
     // Look in Agent.h for all of the setters, like these:
     // man->set_color(Vec3(1, 0, 1));
@@ -49,7 +54,7 @@ void ProjectOne::setup()
     // You can also enable the pathing layer and set grid square colors as you see fit.
     // Works best with map 0, the completely blank map
     terrain->pathLayer.set_enabled(true);
-    terrain->pathLayer.set_value(0, 0, Colors::Red);
+    //terrain->pathLayer.set_value(0, 0, Colors::Red);
 
     // Camera position can be modified from this default
     auto camera = agents->get_camera_agent();
