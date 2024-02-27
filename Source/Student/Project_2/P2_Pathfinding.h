@@ -22,5 +22,27 @@ public:
         It doesn't all need to be in this header and cpp, structure it whatever way
         makes sense to you.
     */
+    enum onList
+    {
+        open,
+        closed
+    };
 
+    struct Node
+    {
+        Node* parent;
+        GridPos gridPos;
+        float finalCost;
+        float givenCost;
+        onList list;
+
+        Node(Node* _parent, GridPos _gridpos, float _finalCost, float _givenCost, onList _list)
+        {
+            parent = _parent;
+            gridPos = _gridpos;
+            finalCost = _finalCost;
+            givenCost = _givenCost;
+            list = _list;
+        }
+    };
 };
