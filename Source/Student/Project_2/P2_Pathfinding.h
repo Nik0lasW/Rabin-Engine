@@ -21,11 +21,12 @@ public:
         You should create whatever functions, variables, or classes you need.
         It doesn't all need to be in this header and cpp, structure it whatever way
         makes sense to you.
-    */
-    enum onList
+    */  
+    enum class onList
     {
         open,
-        closed
+        closed,
+        none
     };
 
     struct Node
@@ -35,6 +36,7 @@ public:
         float finalCost;
         float givenCost;
         onList list;
+        std::vector<Node*> neighbors;
 
         Node(Node* _parent, GridPos _gridpos, float _finalCost, float _givenCost, onList _list)
         {
@@ -45,4 +47,74 @@ public:
             list = _list;
         }
     };
+
+    /* ************************************************** */
+
+    Node* map[40][40];
+
+    class OpenList
+    {
+    private:
+        std::vector<Node*> nodeList;
+    public:
+        void push(Node* node)
+        {
+            nodeList.push_back(node);
+        }
+        Node* pop()
+        {
+            if (nodeList.empty())
+            {
+                return nullptr;
+            }
+            auto minNodeIt = std::min_element(nodeList.begin(), nodeList.end(),
+                [](const Node* a, const Node* b) {
+                    return a->finalCost < b->finalCost;
+                }
+            );
+
+            Node* minNode = *minNodeIt;
+            nodeList.erase(minNodeIt);
+
+            return minNode;
+        }
+        void clear()
+        {
+            nodeList.clear();
+        }
+        void update(Node* node)
+        {
+
+        }
+        void remove(Node* node)
+        {
+            auto it = std::remove(nodeList.begin(), nodeList.end(), node);
+            nodeList.erase(it, nodeList.end());
+        }
+        bool empty() const
+        {
+            return nodeList.empty();
+        }
+    };
+
+    OpenList openList;
+
+    void createMap(Node* map[40][40]);
+
+    void setNeighbors(Node* map[40][40]);
+
+    void clearMap(Node* map[40][40]);
+
+    void deallocateMap(Node* map[40][40]);
+
+    //NEED TO DO CHEB, EUCLID, AND OCTILE
+    float manhattan(Node* currentNode, Node* goalNode);
+
+    float chebyshev(Node* currentNode, Node* goalNode);
+
+    float euclidean(Node* currentNode, Node* goalNode);
+
+    float octile(Node* currentNode, Node* goalNode);
+
+    float inconsistent(Node* currentNode, Node* goalNode);
 };
