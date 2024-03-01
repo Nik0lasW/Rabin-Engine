@@ -98,14 +98,15 @@ public:
     };
 
     OpenList openList;
+    Heuristic heur = Heuristic::NUM_ENTRIES;
 
-    void createMap(Node* map[40][40]);
+    void createMap();
 
-    void setNeighbors(Node* map[40][40]);
+    void setNeighbors();
 
-    void clearMap(Node* map[40][40]);
+    void clearMap();
 
-    void deallocateMap(Node* map[40][40]);
+    void deallocateMap();
 
     //NEED TO DO CHEB, EUCLID, AND OCTILE
     float manhattan(Node* currentNode, Node* goalNode);

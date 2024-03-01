@@ -34,10 +34,9 @@ bool AStarPather::initialize()
         Callback is just a typedef for std::function<void(void)>, so any std::invoke'able
         object that std::function can wrap will suffice.
     */
-    createMap(map);
-
-    setNeighbors(map);
-
+    createMap();
+    Callback cb = std::bind(&AStarPather::setNeighbors, this);
+    Messenger::listen_for_message(Messages::MAP_CHANGE, cb);
     return true; // return false if any errors actually occur, to stop engine initialization
 }
 
@@ -47,7 +46,7 @@ void AStarPather::shutdown()
         Free any dynamically allocated memory or any other general house-
         keeping you need to do during shutdown.
     */
-    deallocateMap(map);
+    deallocateMap();
 }
 
 PathResult AStarPather::compute_path(PathRequest &request)
@@ -87,10 +86,12 @@ PathResult AStarPather::compute_path(PathRequest &request)
     // WRITE YOUR CODE HERE
     GridPos goal = terrain->get_grid_position(request.goal);
     GridPos start = terrain->get_grid_position(request.start);
-    Heuristic heur = Heuristic::NUM_ENTRIES;
+    
     if (request.newRequest)
     {
-        clearMap(map);
+        
+        clearMap();
+        map[start.row][start.col]->givenCost = 0;
         openList.clear();        
         openList.push(map[start.row][start.col]);
         map[start.row][start.col]->list = AStarPather::onList::open;
@@ -99,20 +100,43 @@ PathResult AStarPather::compute_path(PathRequest &request)
     while (!openList.empty())
     {
         Node* parentNode = openList.pop();
+        terrain->set_color(parentNode->gridPos, Colors::Yellow);
         if (parentNode->gridPos == goal)
         {
+            while (parentNode->gridPos != start)
+            {
+                request.path.push_back(terrain->get_world_position(parentNode->gridPos));
+                parentNode = parentNode->parent;
+            }
+            request.path.push_back(terrain->get_world_position(start));
+            request.path.reverse();
+            if (request.settings.rubberBanding && !request.settings.smoothing)
+            {
+                
+            }
+            if (!request.settings.rubberBanding && request.settings.smoothing)
+            {
+
+            }
+            if (request.settings.rubberBanding && request.settings.smoothing)
+            {
+
+            }
             return PathResult::COMPLETE;
         }
         parentNode->list = AStarPather::onList::closed;
         for (int i = 0; i < parentNode->neighbors.size(); i++)
         {
+            float tempGiven = 0;
             if (parentNode->gridPos.row == parentNode->neighbors[i]->gridPos.row || parentNode->gridPos.col == parentNode->neighbors[i]->gridPos.col)
             {
-                parentNode->neighbors[i]->givenCost = parentNode->givenCost + 1;
+                //parentNode->neighbors[i]->givenCost = parentNode->givenCost + 1;
+                 tempGiven = parentNode->givenCost + 1;
             }
             else
             {
-                parentNode->neighbors[i]->givenCost = parentNode->givenCost + (float)std::sqrt(2);
+                //parentNode->neighbors[i]->givenCost = parentNode->givenCost + (float)std::sqrt(2);
+                tempGiven = parentNode->givenCost + (float)std::sqrt(2);
             }
             float heurcost = 0.0f;
             if (heur == Heuristic::MANHATTAN)
@@ -136,22 +160,25 @@ PathResult AStarPather::compute_path(PathRequest &request)
                 heurcost = inconsistent(parentNode->neighbors[i], map[goal.row][goal.col]);
             }
             float prevFinal = parentNode->neighbors[i]->finalCost;
-            //need to add weight to equation (h(x) * weight)
-            parentNode->neighbors[i]->finalCost = parentNode->neighbors[i]->givenCost + heurcost;
+            float tempFinal = tempGiven + (heurcost * request.settings.weight);
             if (parentNode->neighbors[i]->list == AStarPather::onList::none)
             {
                 parentNode->neighbors[i]->list = AStarPather::onList::open;
+                terrain->set_color(parentNode->neighbors[i]->gridPos, Colors::Blue);
                 openList.push(parentNode->neighbors[i]);
+                parentNode->neighbors[i]->finalCost = tempFinal;
+                parentNode->neighbors[i]->givenCost = tempGiven;
+                parentNode->neighbors[i]->parent = parentNode;
             }
-            else if (parentNode->neighbors[i]->finalCost < prevFinal)
+            else if (tempFinal < prevFinal)
             {
                 openList.remove(parentNode->neighbors[i]);
                 parentNode->neighbors[i]->list = AStarPather::onList::open;
+                terrain->set_color(parentNode->neighbors[i]->gridPos, Colors::Blue);
                 openList.push(parentNode->neighbors[i]);
-            }
-            else
-            {
-                parentNode->neighbors[i]->finalCost = prevFinal;
+                parentNode->neighbors[i]->finalCost = tempFinal;
+                parentNode->neighbors[i]->givenCost = tempGiven;
+                parentNode->neighbors[i]->parent = parentNode;
             }
         }
         if (request.settings.singleStep == true)
@@ -169,11 +196,12 @@ PathResult AStarPather::compute_path(PathRequest &request)
     //terrain->set_color(goal, Colors::Orange);
     //request.path.push_back(request.start);
     //request.path.push_back(request.goal);
-    //return PathResult::COMPLETE;
+    //return PathResult::COMPLETE;   
 }
 
-void AStarPather::createMap(Node* map[40][40])
+void AStarPather::createMap()
 {
+    //int mapdimensions = terrain->get_map_height();
     for (int i = 0; i < 40; i++)
     {
         for (int j = 0; j < 40; j++)
@@ -183,11 +211,12 @@ void AStarPather::createMap(Node* map[40][40])
     }
 }
 
-void AStarPather::setNeighbors(Node* map[40][40])
-{
-    for (int i = 0; i < 40; i++)
+void AStarPather::setNeighbors()
+{   
+    int mapdimensions = terrain->get_map_height();
+    for (int i = 0; i < mapdimensions; i++)
     {
-        for (int j = 0; j < 40; j++)
+        for (int j = 0; j < mapdimensions; j++)
         {
             Node* curr = map[i][j];
             curr->neighbors.clear();
@@ -199,9 +228,22 @@ void AStarPather::setNeighbors(Node* map[40][40])
                     int neighborRow = i + x;
                     int neighborCol = j + y;
                     //order SE, E, NE, S, N, SW, W, NW
-                    if (neighborRow >= 0 && neighborRow < 40 && neighborCol >= 0 && neighborCol < 40 && !(x == 0 && y == 0))
+                    if (neighborRow >= 0 && neighborRow < mapdimensions && neighborCol >= 0 && neighborCol < mapdimensions && !(x == 0 && y == 0))
                     {
-                        curr->neighbors.push_back(map[neighborRow][neighborCol]);
+                        if (!terrain->is_wall({ neighborRow, neighborCol }))
+                        {
+                            if (map[i][j]->gridPos.row != neighborRow && map[i][j]->gridPos.col != neighborCol)
+                            {
+                                if (!terrain->is_wall({ neighborRow, j}) && !terrain->is_wall({i, neighborCol}))
+                                {
+                                    curr->neighbors.push_back(map[neighborRow][neighborCol]);
+                                }                           
+                            }
+                            else
+                            {
+                                curr->neighbors.push_back(map[neighborRow][neighborCol]);
+                            }
+                        }
                     }
                 }
             }
@@ -209,11 +251,12 @@ void AStarPather::setNeighbors(Node* map[40][40])
     }
 }
 
-void AStarPather::clearMap(Node* map[40][40])
+void AStarPather::clearMap()
 {
-    for (int i = 0; i < 40; i++)
+    int mapdimensions = terrain->get_map_height();
+    for (int i = 0; i < mapdimensions; i++)
     {
-        for (int j = 0; j < 40; j++)
+        for (int j = 0; j < mapdimensions; j++)
         {
             map[i][j]->parent = nullptr;
             map[i][j]->finalCost = std::numeric_limits<float>::infinity();
@@ -223,11 +266,12 @@ void AStarPather::clearMap(Node* map[40][40])
     }
 }
 
-void AStarPather::deallocateMap(Node* map[40][40])
+void AStarPather::deallocateMap()
 {
-    for (int i = 0; i < 40; ++i) 
+    int mapdimensions = terrain->get_map_height();
+    for (int i = 0; i < mapdimensions; ++i)
     {
-        for (int j = 0; j < 40; ++j) 
+        for (int j = 0; j < mapdimensions; ++j)
         {
             delete map[i][j];
         }
