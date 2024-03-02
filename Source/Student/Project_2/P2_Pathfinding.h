@@ -51,6 +51,7 @@ public:
     /* ************************************************** */
 
     Node* map[40][40];
+    std::vector<Vec3> points;
 
     class OpenList
     {
@@ -108,7 +109,6 @@ public:
 
     void deallocateMap();
 
-    //NEED TO DO CHEB, EUCLID, AND OCTILE
     float manhattan(Node* currentNode, Node* goalNode);
 
     float chebyshev(Node* currentNode, Node* goalNode);

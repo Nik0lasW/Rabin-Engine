@@ -92,7 +92,8 @@ PathResult AStarPather::compute_path(PathRequest &request)
         
         clearMap();
         map[start.row][start.col]->givenCost = 0;
-        openList.clear();        
+        openList.clear();
+        points.clear();
         openList.push(map[start.row][start.col]);
         map[start.row][start.col]->list = AStarPather::onList::open;
         heur = request.settings.heuristic;
@@ -103,25 +104,95 @@ PathResult AStarPather::compute_path(PathRequest &request)
         terrain->set_color(parentNode->gridPos, Colors::Yellow);
         if (parentNode->gridPos == goal)
         {
-            while (parentNode->gridPos != start)
-            {
-                request.path.push_back(terrain->get_world_position(parentNode->gridPos));
-                parentNode = parentNode->parent;
-            }
-            request.path.push_back(terrain->get_world_position(start));
-            request.path.reverse();
-            if (request.settings.rubberBanding && !request.settings.smoothing)
-            {
-                
-            }
-            if (!request.settings.rubberBanding && request.settings.smoothing)
-            {
-
+            Node* savedParent = parentNode;
+            if (request.settings.rubberBanding)
+            {               
+                while (parentNode->parent->gridPos != start)
+                {
+                    int Rowp1 = parentNode->gridPos.row;
+                    int Rowp3 = parentNode->parent->parent->gridPos.row;
+                    int Colp1 = parentNode->gridPos.col;
+                    int Colp3 = parentNode->parent->parent->gridPos.col;
+                    bool blocked = false;
+                    for (int i = std::min(Rowp1, Rowp3); i <= std::max(Rowp1, Rowp3); i++)
+                    {
+                        for (int j = std::min(Colp1, Colp3); j <= std::max(Colp1, Colp3); j++)
+                        {
+                            if (terrain->is_wall({ i,j }))
+                            {
+                                blocked = true;
+                            }
+                        }
+                    }
+                    if (!blocked)
+                    {
+                        parentNode->parent = parentNode->parent->parent;
+                    }
+                    else 
+                    {
+                        parentNode = parentNode->parent;
+                    }
+                }
             }
             if (request.settings.rubberBanding && request.settings.smoothing)
             {
 
             }
+            if (request.settings.smoothing)
+            {
+                Vec3 p1 = terrain->get_world_position(parentNode->gridPos);
+                Vec3 p2 = terrain->get_world_position(parentNode->gridPos);
+                Vec3 p3 = terrain->get_world_position(parentNode->parent->gridPos);
+                Vec3 p4;
+                if (parentNode->parent->gridPos == start)
+                {
+                    p4 = p3;
+                }
+                else
+                {
+                    p4 = terrain->get_world_position(parentNode->parent->parent->gridPos);
+                }               
+                points.push_back(Vec3::CatmullRom(p1, p2, p3, p4, 0.25f));
+                points.push_back(Vec3::CatmullRom(p1, p2, p3, p4, 0.50f));
+                points.push_back(Vec3::CatmullRom(p1, p2, p3, p4, 0.75f));
+                while (p3 != p4)
+                {
+                    p1 = terrain->get_world_position(parentNode->gridPos);
+                    p2 = terrain->get_world_position(parentNode->parent->gridPos);
+                    p3 = terrain->get_world_position(parentNode->parent->parent->gridPos);
+                    if (parentNode->parent->parent->gridPos == start)
+                    {
+                        p4 = p3;
+                    }
+                    else
+                    {
+                        p4 = terrain->get_world_position(parentNode->parent->parent->parent->gridPos);
+                    }
+                    points.push_back(Vec3::CatmullRom(p1, p2, p3, p4, 0.25f));
+                    points.push_back(Vec3::CatmullRom(p1, p2, p3, p4, 0.50f));
+                    points.push_back(Vec3::CatmullRom(p1, p2, p3, p4, 0.75f));
+                    parentNode = parentNode->parent;
+                }
+
+            }
+            parentNode = savedParent;
+            int smoothIndex = 0;
+            while (parentNode->gridPos != start)
+            {
+                request.path.push_back(terrain->get_world_position(parentNode->gridPos));
+                if (request.settings.smoothing)
+                {
+                    request.path.push_back(points[smoothIndex]);
+                    smoothIndex++;
+                    request.path.push_back(points[smoothIndex]);
+                    smoothIndex++;
+                    request.path.push_back(points[smoothIndex]);
+                    smoothIndex++;
+                }
+                parentNode = parentNode->parent;
+            }
+            request.path.push_back(terrain->get_world_position(start));
+            request.path.reverse();           
             return PathResult::COMPLETE;
         }
         parentNode->list = AStarPather::onList::closed;
