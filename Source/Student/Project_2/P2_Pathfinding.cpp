@@ -136,7 +136,18 @@ PathResult AStarPather::compute_path(PathRequest &request)
             }
             if (request.settings.rubberBanding && request.settings.smoothing)
             {
-
+                //bool stillGreater = true;
+                //while (stillGreater)
+                //{
+                //    while (parentNode->gridPos != start)
+                //    {
+                //        float dist = euclidean(parentNode, parentNode->parent);
+                //        if (dist > 1.5f)
+                //        {
+                //
+                //        }
+                //    }
+                //}
             }
             if (request.settings.smoothing)
             {
