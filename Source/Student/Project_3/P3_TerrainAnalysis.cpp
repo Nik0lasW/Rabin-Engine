@@ -23,8 +23,26 @@ float distance_to_closest_wall(int row, int col)
     */
 
     // WRITE YOUR CODE HERE
-    
-    return 0.0f; // REPLACE THIS
+    int mapdimensions = terrain->get_map_height();
+    float finalResult = std::numeric_limits<float>::infinity();
+    for (int i = -1; i < mapdimensions + 1; i++)
+    {
+        for (int j = -1; j < mapdimensions + 1; j++)
+        {
+            GridPos current = { i, j };
+            if (!terrain->is_valid_grid_position(current) || terrain->is_wall(current))
+            {               
+                float xDiff = (float)std::abs(current.row - row);
+                float yDiff = (float)std::abs(current.col - col);
+                float tempResult = (float)std::sqrt(std::pow(xDiff, 2) + std::pow(yDiff, 2));
+                if (tempResult < finalResult)
+                {
+                    finalResult = tempResult;
+                }
+            }
+        }
+    }  
+    return finalResult;
 }
 
 bool is_clear_path(int row0, int col0, int row1, int col1)
@@ -39,8 +57,57 @@ bool is_clear_path(int row0, int col0, int row1, int col1)
     */
 
     // WRITE YOUR CODE HERE
-
-    return false; // REPLACE THIS
+    Vec2 p0 = Vec2((float)row0, (float)col0);
+    Vec2 p1 = Vec2((float)row1, (float)col1);
+    Vec2 c0;
+    Vec2 c1;
+    bool result = true;
+    for (int i = std::min(row0, row1); i <= std::max(row0, row1); i++)
+    {
+        for (int j = std::min(col0, col1); j <= std::max(col0, col1); j++)
+        {
+            GridPos temp = { i , j };
+            if (terrain->is_wall(temp))
+            {
+                for (int k = 0; k < 4; k++)
+                {
+                    switch(k)
+                    {
+                    case 0:
+                        c0 = Vec2(i - 0.55f, j + 0.5f);
+                        c1 = Vec2(i + 0.55f, j + 0.5f);
+                        if (line_intersect(p0, p1, c0, c1))
+                        {
+                            return result = false;
+                        }
+                    case 1:
+                        c0 = Vec2(i + 0.5f, j + 0.55f);
+                        c1 = Vec2(i + 0.5f, j - 0.55f);
+                        if (line_intersect(p0, p1, c0, c1))
+                        {
+                            return result = false;
+                        }
+                    case 2:
+                        c0 = Vec2(i - 0.55f, j - 0.5f);
+                        c1 = Vec2(i + 0.55f, j - 0.5f);
+                        if (line_intersect(p0, p1, c0, c1))
+                        {
+                            return result = false;
+                        }
+                    case 3:
+                        c0 = Vec2(i - 0.5f, j - 0.55f);
+                        c1 = Vec2(i - 0.5f, j + 0.55f);
+                        if (line_intersect(p0, p1, c0, c1))
+                        {
+                            return result = false;
+                        }
+                    }
+                }
+                
+            }           
+        }
+    }
+    return result;
 }
 
 void analyze_openness(MapLayer<float> &layer)
@@ -52,6 +119,19 @@ void analyze_openness(MapLayer<float> &layer)
     */
 
     // WRITE YOUR CODE HERE
+    int mapdimensions = terrain->get_map_height();
+    for (int i = 0; i < mapdimensions; i++)
+    {
+        for (int j = 0; j < mapdimensions; j++)
+        {
+            GridPos current = { i,j };
+            if (!terrain->is_wall(current))
+            {
+                float distance = distance_to_closest_wall(current.row, current.col);
+                layer.set_value(current, 1 / (distance * distance));
+            }
+        }
+    }
 }
 
 void analyze_visibility(MapLayer<float> &layer)
@@ -67,6 +147,36 @@ void analyze_visibility(MapLayer<float> &layer)
     */
 
     // WRITE YOUR CODE HERE
+    int mapdimensions = terrain->get_map_height();
+    float visibleScore = 0.0f;
+    float finalScore = 0.0f;
+    for (int i = 0; i < mapdimensions; i++)
+    {
+        for (int j = 0; j < mapdimensions; j++)
+        {          
+            GridPos current = { i,j };
+            if (!terrain->is_wall(current))
+            {
+                visibleScore = 0.0f;
+                for (int k = 0; k < mapdimensions; k++)
+                {
+                    for (int l = 0; l < mapdimensions; l++)
+                    {
+                        if (is_clear_path(i, j, k, l))
+                        {
+                            visibleScore++;
+                        }
+                    }
+                }
+                finalScore = visibleScore / 160;
+                if (finalScore > 1.0f)
+                {
+                    finalScore = 1.0f;
+                }
+                layer.set_value(current, finalScore);
+            }           
+        }
+    }
 }
 
 void analyze_visible_to_cell(MapLayer<float> &layer, int row, int col)
@@ -82,6 +192,64 @@ void analyze_visible_to_cell(MapLayer<float> &layer, int row, int col)
     */
 
     // WRITE YOUR CODE HERE
+    int mapdimensions = terrain->get_map_height();
+    for (int i = 0; i < mapdimensions; i++)
+    {
+        for (int j = 0; j < mapdimensions; j++)
+        {
+            GridPos current = { i, j };
+            if (!terrain->is_wall(current))
+            {
+                if (is_clear_path(row, col, i, j))
+                {
+                    layer.set_value(current, 1.0f);
+                }
+                else
+                {
+                    layer.set_value(current, 0.0f);
+                }
+            }
+        }            
+    }
+    for (int i = 0; i < mapdimensions; i++)
+    {
+        for (int j = 0; j < mapdimensions; j++)
+        {
+            GridPos current = { i, j };
+            if (!terrain->is_wall(current))
+            {
+                for (int x = -1; x <= 1; x++)
+                {
+                    for (int y = -1; y <= 1; y++)
+                    {
+                        int neighborRow = i + x;
+                        int neighborCol = j + y;
+                        if (layer.get_value(current) == 0.0f)
+                        {
+                            if (current.row != neighborRow && current.col != neighborCol)
+                            {
+                                if (!terrain->is_wall({ neighborRow, j }) && !terrain->is_wall({ i, neighborCol }))
+                                {
+                                    if (layer.get_value({ neighborRow, neighborCol }) == 1.0f)
+                                    {
+                                        layer.set_value(current, 0.5f);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (layer.get_value({ neighborRow, neighborCol }) == 1.0f)
+                                {
+                                    layer.set_value(current, 0.5f);
+                                }
+                            }
+                            
+                        }                      
+                    }
+                }
+            }
+        }
+    }
 }
 
 void analyze_agent_vision(MapLayer<float> &layer, const Agent *agent)
@@ -105,6 +273,24 @@ void analyze_agent_vision(MapLayer<float> &layer, const Agent *agent)
     */
 
     // WRITE YOUR CODE HERE
+    int mapdimensions = terrain->get_map_height();
+    GridPos playerPos = terrain->get_grid_position(agent->get_position());
+    for (int i = 0; i < mapdimensions; i++)
+    {
+        for (int j = 0; j < mapdimensions; j++)
+        {
+            GridPos current = { i, j };
+            if (!terrain->is_wall(current))
+            {
+
+                if (is_clear_path(playerPos.row, playerPos.col, current.row, current.col))
+                {
+                    //NEED HELP
+                    layer.set_value(current, 1.0f);
+                }
+            }
+        }
+    }
 }
 
 void propagate_solo_occupancy(MapLayer<float> &layer, float decay, float growth)
@@ -124,6 +310,63 @@ void propagate_solo_occupancy(MapLayer<float> &layer, float decay, float growth)
     */
     
     // WRITE YOUR CODE HERE
+    int mapdimensions = terrain->get_map_height();
+    float tempLayer[40][40];
+    for (int i = 0; i < mapdimensions; i++)
+    {
+        for (int j = 0; j < mapdimensions; j++)
+        {
+            GridPos current = { i, j };
+
+            if (!terrain->is_wall(current))
+            {
+                float maxInfluence = 0.0f;
+                for (int x = -1; x <= 1; x++)
+                {
+                    for (int y = -1; y <= 1; y++)
+                    {
+                        int neighborRow = i + x;
+                        int neighborCol = j + y;
+                        //order SE, E, NE, S, N, SW, W, NW
+                        if (neighborRow >= 0 && neighborRow < mapdimensions && neighborCol >= 0 && neighborCol < mapdimensions && !(x == 0 && y == 0))
+                        {
+                            if (!terrain->is_wall({ neighborRow, neighborCol }))
+                            {
+                                float influence = layer.get_value({ neighborRow, neighborCol });
+                                if (current.row != neighborRow && current.col != neighborCol)
+                                {
+                                    influence = influence * (float)std::exp(-std::sqrt(2) * 0.2);                  
+                                }
+                                else
+                                {
+                                    influence = influence * (float)std::exp(-1 * 0.2);
+                                }
+
+                                if (influence > maxInfluence)
+                                {
+                                    maxInfluence = influence;
+                                }
+                            }
+                        }
+                    }
+                }
+                float result = lerp(layer.get_value(current), maxInfluence, growth);
+                tempLayer[i][j] = result;
+            }           
+        }
+    }
+    for (int i = 0; i < mapdimensions; i++)
+    {
+        for (int j = 0; j < mapdimensions; j++)
+        {
+            GridPos current = { i, j };
+            if (!terrain->is_wall(current))
+            {
+                GridPos current = { i, j };
+                layer.set_value(current, tempLayer[i][j]);
+            }
+        }
+    }
 }
 
 void propagate_dual_occupancy(MapLayer<float> &layer, float decay, float growth)
@@ -156,6 +399,32 @@ void normalize_solo_occupancy(MapLayer<float> &layer)
     */
 
     // WRITE YOUR CODE HERE
+    int mapdimensions = terrain->get_map_height();
+    float maxInfluence = 0.0f;
+    for (int i = 0; i < mapdimensions; i++)
+    {
+        for (int j = 0; j < mapdimensions; j++)
+        {
+            float influence = 0.0f;
+            GridPos current = { i, j };
+            influence = layer.get_value(current);
+            if (influence > maxInfluence)
+            {
+                maxInfluence = influence;
+            }
+        }
+    }
+    for (int i = 0; i < mapdimensions; i++)
+    {
+        for (int j = 0; j < mapdimensions; j++)
+        {
+            GridPos current = { i, j };
+            if (layer.get_value(current) > 0)
+            {
+                layer.set_value(current, layer.get_value(current) / maxInfluence);
+            }
+        }
+    }
 }
 
 void normalize_dual_occupancy(MapLayer<float> &layer)
