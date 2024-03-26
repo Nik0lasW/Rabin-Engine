@@ -101,7 +101,7 @@ PathResult AStarPather::compute_path(PathRequest &request)
     while (!openList.empty())
     {
         Node* parentNode = openList.pop();
-        terrain->set_color(parentNode->gridPos, Colors::Yellow);
+        //terrain->set_color(parentNode->gridPos, Colors::Yellow);
         if (parentNode->gridPos == goal)
         {
             Node* savedParent = parentNode;
@@ -136,19 +136,34 @@ PathResult AStarPather::compute_path(PathRequest &request)
             }
             if (request.settings.rubberBanding && request.settings.smoothing)
             {
-                //bool stillGreater = true;
-                //while (stillGreater)
-                //{
-                //    while (parentNode->gridPos != start)
-                //    {
-                //        float dist = euclidean(parentNode, parentNode->parent);
-                //        if (dist > 1.5f)
-                //        {
-                //
-                //        }
-                //    }
-                //}
+                parentNode = savedParent;
+                bool stillGreater = true;
+                while (stillGreater)
+                {
+                    bool greater = false;
+                    while (parentNode->gridPos != start)
+                    {
+                        float dist = euclidean(parentNode, parentNode->parent);
+                        if (dist > ((terrain->mapSizeInWorld / terrain->get_map_width()) * 1.5f))
+                        {
+                            GridPos tempGrid = { (parentNode->gridPos.row + parentNode->parent->gridPos.row) / 2, (parentNode->gridPos.col + parentNode->parent->gridPos.col) / 2 };
+                            Node* tempNode = new Node(parentNode->parent, tempGrid, 0, 0, AStarPather::onList::none);
+                            parentNode->parent = tempNode;
+                            greater = true;              
+                        }
+                        parentNode = parentNode->parent;
+                    }
+                    if (greater == false)
+                    {
+                        stillGreater = false;
+                    }
+                    else
+                    {
+                        parentNode = savedParent;
+                    }
+                }
             }
+            parentNode = savedParent;
             if (request.settings.smoothing)
             {
                 Vec3 p1 = terrain->get_world_position(parentNode->gridPos);
@@ -246,7 +261,7 @@ PathResult AStarPather::compute_path(PathRequest &request)
             if (parentNode->neighbors[i]->list == AStarPather::onList::none)
             {
                 parentNode->neighbors[i]->list = AStarPather::onList::open;
-                terrain->set_color(parentNode->neighbors[i]->gridPos, Colors::Blue);
+                //terrain->set_color(parentNode->neighbors[i]->gridPos, Colors::Blue);
                 openList.push(parentNode->neighbors[i]);
                 parentNode->neighbors[i]->finalCost = tempFinal;
                 parentNode->neighbors[i]->givenCost = tempGiven;
@@ -256,7 +271,7 @@ PathResult AStarPather::compute_path(PathRequest &request)
             {
                 openList.remove(parentNode->neighbors[i]);
                 parentNode->neighbors[i]->list = AStarPather::onList::open;
-                terrain->set_color(parentNode->neighbors[i]->gridPos, Colors::Blue);
+                //terrain->set_color(parentNode->neighbors[i]->gridPos, Colors::Blue);
                 openList.push(parentNode->neighbors[i]);
                 parentNode->neighbors[i]->finalCost = tempFinal;
                 parentNode->neighbors[i]->givenCost = tempGiven;

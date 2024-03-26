@@ -67,36 +67,40 @@ bool is_clear_path(int row0, int col0, int row1, int col1)
         for (int j = std::min(col0, col1); j <= std::max(col0, col1); j++)
         {
             GridPos temp = { i , j };
-            if (terrain->is_wall(temp))
+            if (terrain->is_valid_grid_position(temp) && terrain->is_wall(temp))
             {
                 for (int k = 0; k < 4; k++)
                 {
                     switch(k)
                     {
                     case 0:
-                        c0 = Vec2(i - 0.55f, j + 0.5f);
-                        c1 = Vec2(i + 0.55f, j + 0.5f);
+                        //top boundary
+                        c0 = Vec2(i - 0.51f, j + 0.51f);
+                        c1 = Vec2(i + 0.51f, j + 0.51f);
                         if (line_intersect(p0, p1, c0, c1))
                         {
                             return result = false;
                         }
                     case 1:
-                        c0 = Vec2(i + 0.5f, j + 0.55f);
-                        c1 = Vec2(i + 0.5f, j - 0.55f);
+                        //right boundary
+                        c0 = Vec2(i + 0.51f, j + 0.51f);
+                        c1 = Vec2(i + 0.51f, j - 0.51f);
                         if (line_intersect(p0, p1, c0, c1))
                         {
                             return result = false;
                         }
                     case 2:
-                        c0 = Vec2(i - 0.55f, j - 0.5f);
-                        c1 = Vec2(i + 0.55f, j - 0.5f);
+                        //bottom boundary
+                        c0 = Vec2(i - 0.51f, j - 0.51f);
+                        c1 = Vec2(i + 0.51f, j - 0.51f);
                         if (line_intersect(p0, p1, c0, c1))
                         {
                             return result = false;
                         }
                     case 3:
-                        c0 = Vec2(i - 0.5f, j - 0.55f);
-                        c1 = Vec2(i - 0.5f, j + 0.55f);
+                        //left boundary
+                        c0 = Vec2(i - 0.51f, j - 0.51f);
+                        c1 = Vec2(i - 0.51f, j + 0.51f);
                         if (line_intersect(p0, p1, c0, c1))
                         {
                             return result = false;
@@ -125,7 +129,7 @@ void analyze_openness(MapLayer<float> &layer)
         for (int j = 0; j < mapdimensions; j++)
         {
             GridPos current = { i,j };
-            if (!terrain->is_wall(current))
+            if (terrain->is_valid_grid_position(current) && !terrain->is_wall(current))
             {
                 float distance = distance_to_closest_wall(current.row, current.col);
                 layer.set_value(current, 1 / (distance * distance));
@@ -155,7 +159,7 @@ void analyze_visibility(MapLayer<float> &layer)
         for (int j = 0; j < mapdimensions; j++)
         {          
             GridPos current = { i,j };
-            if (!terrain->is_wall(current))
+            if (terrain->is_valid_grid_position(current) && !terrain->is_wall(current))
             {
                 visibleScore = 0.0f;
                 for (int k = 0; k < mapdimensions; k++)
@@ -198,7 +202,7 @@ void analyze_visible_to_cell(MapLayer<float> &layer, int row, int col)
         for (int j = 0; j < mapdimensions; j++)
         {
             GridPos current = { i, j };
-            if (!terrain->is_wall(current))
+            if (terrain->is_valid_grid_position(current) && !terrain->is_wall(current))
             {
                 if (is_clear_path(row, col, i, j))
                 {
@@ -216,7 +220,7 @@ void analyze_visible_to_cell(MapLayer<float> &layer, int row, int col)
         for (int j = 0; j < mapdimensions; j++)
         {
             GridPos current = { i, j };
-            if (!terrain->is_wall(current))
+            if (terrain->is_valid_grid_position(current) && !terrain->is_wall(current))
             {
                 for (int x = -1; x <= 1; x++)
                 {
@@ -228,7 +232,7 @@ void analyze_visible_to_cell(MapLayer<float> &layer, int row, int col)
                         {
                             if (current.row != neighborRow && current.col != neighborCol)
                             {
-                                if (!terrain->is_wall({ neighborRow, j }) && !terrain->is_wall({ i, neighborCol }))
+                                if (terrain->is_valid_grid_position({ neighborRow, j }) && terrain->is_valid_grid_position({ i, neighborCol }) && !terrain->is_wall({ neighborRow, j }) && !terrain->is_wall({ i, neighborCol }))
                                 {
                                     if (layer.get_value({ neighborRow, neighborCol }) == 1.0f)
                                     {
@@ -238,9 +242,12 @@ void analyze_visible_to_cell(MapLayer<float> &layer, int row, int col)
                             }
                             else
                             {
-                                if (layer.get_value({ neighborRow, neighborCol }) == 1.0f)
+                                if (terrain->is_valid_grid_position({ neighborRow, neighborCol }))
                                 {
-                                    layer.set_value(current, 0.5f);
+                                    if (layer.get_value({ neighborRow, neighborCol }) == 1.0f)
+                                    {
+                                        layer.set_value(current, 0.5f);
+                                    }
                                 }
                             }
                             
@@ -280,13 +287,28 @@ void analyze_agent_vision(MapLayer<float> &layer, const Agent *agent)
         for (int j = 0; j < mapdimensions; j++)
         {
             GridPos current = { i, j };
-            if (!terrain->is_wall(current))
+            if (terrain->is_valid_grid_position(current) && !terrain->is_wall(current))
             {
 
                 if (is_clear_path(playerPos.row, playerPos.col, current.row, current.col))
                 {
-                    //NEED HELP
-                    layer.set_value(current, 1.0f);
+                    Vec3 view = agent->get_forward_vector();
+                    view.y = 0.0f;
+
+                    Vec3 cell = terrain->get_world_position(current);
+                    Vec3 player = terrain->get_world_position(playerPos);
+                    Vec3 agentToCell = cell - player;
+                    agentToCell.y = 0.0f;
+
+                    view.Normalize();
+                    agentToCell.Normalize();
+
+                    float dotProduct = view.Dot(agentToCell);
+
+                    if (dotProduct > std::cos(((180.1 * PI) / 180) / 2))
+                    {
+                        layer.set_value(current, 1.0f);
+                    }
                 }
             }
         }
@@ -318,7 +340,7 @@ void propagate_solo_occupancy(MapLayer<float> &layer, float decay, float growth)
         {
             GridPos current = { i, j };
 
-            if (!terrain->is_wall(current))
+            if (terrain->is_valid_grid_position(current) && !terrain->is_wall(current))
             {
                 float maxInfluence = 0.0f;
                 for (int x = -1; x <= 1; x++)
@@ -330,22 +352,28 @@ void propagate_solo_occupancy(MapLayer<float> &layer, float decay, float growth)
                         //order SE, E, NE, S, N, SW, W, NW
                         if (neighborRow >= 0 && neighborRow < mapdimensions && neighborCol >= 0 && neighborCol < mapdimensions && !(x == 0 && y == 0))
                         {
-                            if (!terrain->is_wall({ neighborRow, neighborCol }))
+                            if (terrain->is_valid_grid_position({ neighborRow, neighborCol }) && !terrain->is_wall({ neighborRow, neighborCol }))
                             {
                                 float influence = layer.get_value({ neighborRow, neighborCol });
                                 if (current.row != neighborRow && current.col != neighborCol)
                                 {
-                                    influence = influence * (float)std::exp(-std::sqrt(2) * 0.2);                  
+                                    if (!terrain->is_wall({ neighborRow, j }) && !terrain->is_wall({ i, neighborCol }))
+                                    {
+                                        influence = influence * (float)std::exp(-std::sqrt(2) * decay);
+                                        if (influence > maxInfluence)
+                                        {
+                                            maxInfluence = influence;
+                                        }
+                                    }
                                 }
                                 else
                                 {
-                                    influence = influence * (float)std::exp(-1 * 0.2);
-                                }
-
-                                if (influence > maxInfluence)
-                                {
-                                    maxInfluence = influence;
-                                }
+                                    influence = influence * (float)std::exp(-1 * decay);
+                                    if (influence > maxInfluence)
+                                    {
+                                        maxInfluence = influence;
+                                    }
+                                }     
                             }
                         }
                     }
@@ -360,9 +388,8 @@ void propagate_solo_occupancy(MapLayer<float> &layer, float decay, float growth)
         for (int j = 0; j < mapdimensions; j++)
         {
             GridPos current = { i, j };
-            if (!terrain->is_wall(current))
+            if (terrain->is_valid_grid_position(current) && !terrain->is_wall(current))
             {
-                GridPos current = { i, j };
                 layer.set_value(current, tempLayer[i][j]);
             }
         }
@@ -459,6 +486,53 @@ void enemy_field_of_view(MapLayer<float> &layer, float fovAngle, float closeDist
     */
 
     // WRITE YOUR CODE HERE
+    int mapdimensions = terrain->get_map_height();
+    for (int i = 0; i < mapdimensions; i++)
+    {
+        for (int j = 0; j < mapdimensions; j++)
+        {
+            GridPos current = { i, j };
+            if (layer.get_value(current) < 0)
+            {
+                layer.set_value(current, 0);
+            }
+        }
+    }
+    GridPos enemyPos = terrain->get_grid_position(enemy->get_position());
+    for (int i = 0; i < mapdimensions; i++)
+    {
+        for (int j = 0; j < mapdimensions; j++)
+        {
+            GridPos current = { i, j };           
+            if (is_clear_path(current.row, current.col, enemyPos.row, enemyPos.col))
+            {
+                if (std::sqrt(std::pow(current.row - enemyPos.row, 2) + std::pow(current.col - enemyPos.col, 2)) < closeDistance)
+                {
+                    layer.set_value(current, occupancyValue);
+                }
+                else
+                {
+                    Vec3 view = enemy->get_forward_vector();
+                    view.y = 0.0f;
+
+                    Vec3 cell = terrain->get_world_position(current);
+                    Vec3 enemy = terrain->get_world_position(enemyPos);
+                    Vec3 agentToCell = cell - enemy;
+                    agentToCell.y = 0.0f;
+
+                    view.Normalize();
+                    agentToCell.Normalize();
+
+                    float dotProduct = view.Dot(agentToCell);
+
+                    if (dotProduct > std::cos(((fovAngle * PI) / fovAngle) / 2))
+                    {
+                        layer.set_value(current, occupancyValue);
+                    }
+                }
+            }
+        }
+    }
 }
 
 bool enemy_find_player(MapLayer<float> &layer, AStarAgent *enemy, Agent *player)
@@ -499,6 +573,35 @@ bool enemy_seek_player(MapLayer<float> &layer, AStarAgent *enemy)
     */
 
     // WRITE YOUR CODE HERE
-
-    return false; // REPLACE THIS
+    int mapdimensions = terrain->get_map_height();
+    float maxValue = 0.0f;
+    GridPos savedPos;
+    GridPos enemyPos = terrain->get_grid_position(enemy->get_position());
+    for (int i = 0; i < mapdimensions; i++)
+    {
+        for (int j = 0; j < mapdimensions; j++)
+        {
+            GridPos current = { i,j };
+            float value = layer.get_value(current);
+            if (value > maxValue)
+            {
+                maxValue = value;
+                savedPos = current;
+            }
+            else if (value == maxValue && std::sqrt(std::pow(current.row - enemyPos.row, 2) + std::pow(current.col - enemyPos.col, 2)) < std::sqrt(std::pow(savedPos.row - enemyPos.row, 2) + std::pow(savedPos.col - enemyPos.col, 2)))
+            {
+                maxValue = value;
+                savedPos = current;
+            }
+        }
+    }
+    if (maxValue > 0.0f)
+    {
+        enemy->path_to(terrain->get_world_position(savedPos));
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
